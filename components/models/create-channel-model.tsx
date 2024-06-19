@@ -29,41 +29,57 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod"
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useModel } from "@/hooks/use-model-store";
 import { ChannelType } from "@prisma/client";
-
+import qs from "query-string"
+import { useEffect } from "react";
 
 const formSchema = z.object({
     name : z.string().min(1, {
         message: "Channel name is required!"
     }).refine(
-        name => name !== "general",{
-            message: "Channel name cannot be 'general!'"
+        name => name.toLowerCase() !== "general",{
+            message: "Channel name cannot be 'general'!"
         }
     ),
     type: z.nativeEnum(ChannelType)
 })
 
 const CreateChannelModel = () => {
-    const { isOpen, onClose, type} = useModel();
+    const { isOpen, onClose, type, data} = useModel();
     const router = useRouter();
+    const params = useParams();
 
     const isModelOpen = isOpen && type === "createChannel";
+    const { channelType } = data;
 
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name : "",
-            type: ChannelType.TEXT
+            type: channelType || ChannelType.TEXT
         }
     })
+    useEffect(()=>{
+        if(channelType){
+            form.setValue("type", channelType);
+        }else {
+            form.setValue("type", ChannelType.TEXT)
+        }
+    }, [channelType, form])
 
     const isLoading = form.formState.isSubmitting;
 
     const onSubmit = async(values: z.infer<typeof formSchema>) => {
         try {
-            await axios.post("/api/servers", values);
+            const url = qs.stringifyUrl({
+                url : "/api/channels",
+                query: {
+                    serverId: params?.serverId
+                }
+            })
+            await axios.post(url, values);
 
             form.reset();
             router.refresh();

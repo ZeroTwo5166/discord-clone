@@ -32,9 +32,7 @@ const formSchema = z.object({
     name : z.string().min(1, {
         message: "Server name is required!"
     }),
-    imageUrl : z.string().min(1, {
-        message: "Server image is required!"
-    })
+    imageUrl : z.string()
 })
 
 const CreateServerModel = () => {
@@ -55,11 +53,14 @@ const CreateServerModel = () => {
 
     const onSubmit = async(values: z.infer<typeof formSchema>) => {
         try {
-            await axios.post("/api/servers", values);
 
+            const imageUrl = values.imageUrl || "https://utfs.io/f/87baf7de-9eb8-4f1a-95e8-1db535298d4d-rn3h9o.png"
+            console.log(imageUrl)
+            
+            await axios.post("/api/servers", {...values, imageUrl});
             form.reset();
             router.refresh();
-            onClose();
+            onClose(); 
         } catch (error) {
             console.log(error)
         }
@@ -85,21 +86,21 @@ const CreateServerModel = () => {
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                         <div className="space-y-8 px-6">
                             <div className="flex items-center justify-center text-center">
-                            <FormField 
-                                control={form.control}
-                                name="imageUrl"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormControl>
-                                            <FileUpload
-                                                endpoint="serverImage" 
-                                                value={field.value}
-                                                onChange={field.onChange}
-                                                />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
+                                <FormField 
+                                    control={form.control}
+                                    name="imageUrl"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormControl>
+                                                <FileUpload
+                                                    endpoint="serverImage" 
+                                                    value={field.value}
+                                                    onChange={field.onChange}
+                                                    />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
                             </div>
                             <FormField 
                                 control={form.control}
