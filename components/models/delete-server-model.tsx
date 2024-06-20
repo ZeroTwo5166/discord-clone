@@ -61,7 +61,6 @@ const DeleteServerModel = () => {
 
     const handleCancel = () => {
         setShowConfirmDialog(false);
-        setConfirmationText(""); // Clear confirmation text
         onClose();
     };
 
@@ -71,6 +70,7 @@ const DeleteServerModel = () => {
 
         if(confirmationText === confirmDeletionText){
             onDeleteClick();
+            setConfirmationText("");
         }
     }
 

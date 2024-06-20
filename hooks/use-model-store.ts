@@ -3,12 +3,14 @@ import { create } from "zustand"
 
 export type ModelType = "createServer" | "invite" | "editServer" 
 | "members" | "createChannel" | "leaveServer" | "deleteServer"
-| "deleteChannel";
+| "deleteChannel" | "editChannel" | "messageFile";
 
 interface ModelData {
     server?: Server;
     channel?:Channel;
-    channelType?: ChannelType
+    channelType?: ChannelType,
+    apiUrl?: string,
+    query?: Record<string,any>
 }
 
 interface ModelStore{
