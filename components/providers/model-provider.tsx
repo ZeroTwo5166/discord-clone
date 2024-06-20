@@ -11,6 +11,7 @@ import DeleteServerModel from "../models/delete-server-model"
 import DeleteChannelModel from "../models/delete-channel-model"
 import EditChannelModel from "../models/edit-channel-model"
 import MessageFileModel from "../models/message-file-model"
+import DeleteMessageModel from "../models/delete-message-model"
 
 export const ModelProvider = () => {
     const [isMounted, setIsMounted] = useState(false)
@@ -31,6 +32,7 @@ export const ModelProvider = () => {
             <DeleteChannelModel/>
             <EditChannelModel/>
             <MessageFileModel />
+            <DeleteMessageModel/>
         </>
     )
 }
