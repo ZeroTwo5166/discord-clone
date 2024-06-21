@@ -23,7 +23,7 @@ export const MobileToggle = ({
                 <div className="w-[72px]">
                     <NavigationSideBar />
                 </div>
-                <ServerSidebar serverId={serverId}/>
+                <ServerSidebar serverId={serverId} isMobileHeader={true}/>
             </SheetContent>
         </Sheet>
     )

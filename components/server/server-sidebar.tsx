@@ -13,6 +13,7 @@ import { ServerMember } from "./server-member";
 
 interface ServerSidebarProps {
     serverId: string;
+    isMobileHeader ?: boolean
 }
 
 const iconMap = {
@@ -29,7 +30,8 @@ const roleIconMap = {
 }
 
 export const ServerSidebar = async ({
-    serverId
+    serverId,
+    isMobileHeader
 }: ServerSidebarProps) => {
     const profile = await currentProfile();
 
@@ -71,7 +73,7 @@ export const ServerSidebar = async ({
 
     return(
     <div className="flex flex-col h-full text-primary w-full dark:bg-[#2B2D31] bg-[#F2F3F5]">
-        <ServerHeader server={server} role={role}/>
+        <ServerHeader server={server} role={role} isMobile={isMobileHeader}/>
         <ScrollArea className="flex-1 px-3">
             <div className="mt-2">
                 <ServerSearch 

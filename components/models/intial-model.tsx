@@ -97,6 +97,7 @@ const InitialModel = () => {
                                                 endpoint="serverImage" 
                                                 value={field.value}
                                                 onChange={field.onChange}
+                                                type="server"
                                                 />
                                         </FormControl>
                                     </FormItem>

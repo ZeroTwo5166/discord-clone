@@ -96,6 +96,7 @@ const CreateServerModel = () => {
                                                     endpoint="serverImage" 
                                                     value={field.value}
                                                     onChange={field.onChange}
+                                                    type="server"
                                                     />
                                             </FormControl>
                                         </FormItem>

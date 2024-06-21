@@ -9,12 +9,14 @@ import { useModel } from "@/hooks/use-model-store";
 interface ServerHeaderProps {
     server: ServerWithMembersWithProfiles;
     role?:MemberRole;
+    isMobile?: boolean
 };
 
 
 export const ServerHeader = ({
     server,
-    role
+    role,
+    isMobile
 } : ServerHeaderProps) => {
     const { onOpen } = useModel();
     const isAdmin = role === MemberRole.ADMIN;
@@ -28,7 +30,10 @@ export const ServerHeader = ({
                  dark:border:bg-zinc-700/50 transition"
                 > 
                     {server.name}
-                    <ChevronDown className="h-5 w-5 ml-auto"/>
+                    {isMobile ? (
+                        <ChevronDown className="h-5 w-5 ml-2"/> 
+                    ) : (<ChevronDown className="h-5 w-5 ml-auto"/>)}
+   
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 text-xs
@@ -37,7 +42,7 @@ export const ServerHeader = ({
                 {isModerator && (
                     <DropdownMenuItem 
                      onClick={()=>onOpen("invite", {server})}
-                     className="text-indigo-600 text-indigo-400
+                     className="text-indigo-600 dark:text-indigo-400
                      px-3 py-2 text-sm cursor-pointer"
                     >
                         Invite People

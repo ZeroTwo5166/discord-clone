@@ -97,6 +97,7 @@ const MessageFileModel = () => {
                                                 endpoint="messageFile" 
                                                 value={field.value}
                                                 onChange={field.onChange}
+                                                type="message"
                                                 />
                                         </FormControl>
                                     </FormItem>
