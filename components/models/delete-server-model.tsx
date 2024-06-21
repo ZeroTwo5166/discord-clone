@@ -65,8 +65,6 @@ const DeleteServerModel = () => {
     };
 
     const handleConfirmDelete = () => {
-        //const requiredText = `${server?.profileId.}`
-        //console.log(server)
 
         if(confirmationText === confirmDeletionText){
             onDeleteClick();
