@@ -142,7 +142,7 @@ export default function Home() {
                       "quantity": 2
                     },
                     "repulse": {
-                      "distance": 200,
+                      "distance": 100,
                       "duration": 0.4,
                       "factor": 100,
                       "speed": 1,
@@ -323,7 +323,7 @@ export default function Home() {
                       "mode": "delete",
                       "value": 0
                     },
-                    "value": 100
+                    "value": 500 //Star count
                   },
                   "opacity": {
                     "value": 0.5,

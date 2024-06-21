@@ -31,7 +31,7 @@ const roleIconMap = {
 
 export const ServerSidebar = async ({
     serverId,
-    isMobileHeader
+    isMobileHeader = false
 }: ServerSidebarProps) => {
     const profile = await currentProfile();
 

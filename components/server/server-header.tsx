@@ -13,7 +13,7 @@ interface ServerHeaderProps {
 };
 
 
-export const ServerHeader = ({
+export const ServerHeader : React.FC<ServerHeaderProps> = ({
     server,
     role,
     isMobile
@@ -27,7 +27,7 @@ export const ServerHeader = ({
                 <button className="w-full text-md font-semibold px-3 flex
                  items-center h-12 border-neutral-200
                  dark:border-neutral-800 border-b-2 hover:bg-zinc-700/10
-                 dark:border:bg-zinc-700/50 transition"
+                 dark:hover:bg-zinc-700/50 transition"
                 > 
                     {server.name}
                     {isMobile ? (
@@ -37,7 +37,7 @@ export const ServerHeader = ({
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 text-xs
-             font-medium text-black dark:text-neutral-200 space-y-[2px]"
+             font-medium text-black dark:text-neutral-400 space-y-[2px]"
             >
                 {isModerator && (
                     <DropdownMenuItem 
