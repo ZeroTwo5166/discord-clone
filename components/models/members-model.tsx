@@ -27,7 +27,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { UserAvatar } from "@/components/user-avatar";
 import {
   Check,
-  Gavel,
+  Crown,
+  UserMinusIcon,
   Loader2,
   MoreVertical,
   Shield,
@@ -35,24 +36,35 @@ import {
   ShieldCheck,
   ShieldQuestion,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import qs from "query-string";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+
 
 const roleIconMap = {
   GUEST: null,
   MODERATOR: <ShieldCheck className="h-4 w-4 ml-2 text-indigo-500" />,
   ADMIN: <ShieldAlert className="h-4 w-4 text-rose-500" />,
+  CREATOR: <Crown className="h-4 w-4 text-yellow-500" />
 };
 
 const MembersModel = () => {
   const { onOpen, isOpen, onClose, type, data } = useModel();
   const [loadingId, setLoadingId] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
 
   const isModelOpen = isOpen && type === "members";
   const { server } = data as { server: ServerWithMembersWithProfiles };
   const router = useRouter();
+
+  useEffect(() => {
+    if (data?.server?.members) {
+      data.server.members.forEach(member => {
+        console.log(server);
+      });
+    }
+  }, [data]); // Only re-run the effect if data changes
 
   const onKick = async (memberId: string) => {
     try {
@@ -94,8 +106,27 @@ const MembersModel = () => {
     }
   };
 
+
+  const renderRoleOptions = (memberId: string) => {
+    const availableRoles = ["ADMIN", "MODERATOR", "CREATOR", "GUEST"];
+    return (
+      <DropdownMenuSubContent>
+        {availableRoles.map((role) => (
+          <DropdownMenuItem
+            key={role}
+            onClick={() => onRoleChange(memberId, role as MemberRole)}
+          >
+            {roleIconMap[role as MemberRole]}
+            <span className="ml-2">{role}</span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuSubContent>
+    );
+  };
+
+
   return (
-    <Dialog open={isModelOpen} onOpenChange={onClose}>
+    <Dialog open={isModelOpen && type === "members"} onOpenChange={onClose}>
       <DialogContent className="bg-white dark:bg-[#1e1f22] text-black dark:text-white overflow-hidden">
         <DialogHeader className="pt-4 px-2">
           <DialogTitle className="text-2xl text-left font-bold">
@@ -123,7 +154,7 @@ const MembersModel = () => {
                 </div>
                 <p className="text-xs text-zinc-500">{member.profile.email}</p>
               </div>
-              {server.profileId !== member.profileId &&
+              {server.creatorId !== member.profileId &&
                 loadingId !== member.id && (
                   <div className="ml-auto">
                     <DropdownMenu>
@@ -138,32 +169,13 @@ const MembersModel = () => {
                           </DropdownMenuSubTrigger>
                           <DropdownMenuPortal>
                             <DropdownMenuSubContent>
-                              <DropdownMenuItem
-                                onClick={() => onRoleChange(member.id, "GUEST")}
-                              >
-                                <Shield className="h-4 w-4 mr-2" />
-                                Guest
-                                {member.role === "GUEST" && (
-                                  <Check className="h-4 w-4 text-green-600 ml-auto" />
-                                )}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  onRoleChange(member.id, "MODERATOR");
-                                }}
-                              >
-                                <ShieldCheck className="h-4 w-4 mr-2" />
-                                Moderator
-                                {member.role === "MODERATOR" && (
-                                  <Check className="h-4 w-4 text-green-600 ml-2" />
-                                )}
-                              </DropdownMenuItem>
+                            {renderRoleOptions(member.role)}
                             </DropdownMenuSubContent>
                           </DropdownMenuPortal>
                         </DropdownMenuSub>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => onKick(member.id)}>
-                          <Gavel className="h-4 w-4 mr-2" />
+                          <UserMinusIcon className="h-4 w-4 mr-2" />
                           Kick
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -182,3 +194,106 @@ const MembersModel = () => {
 };
 
 export default MembersModel;
+
+/*
+ <DropdownMenuItem
+                                onClick={() => onRoleChange(member.id, "GUEST")}
+                              >
+                                <Shield className="h-4 w-4 mr-2" />
+                                Guest
+                                {member.role === "GUEST" && (
+                                  <Check className="h-4 w-4 text-green-600 ml-auto" />
+                                )}
+                              </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                    onClick={() => {
+                                      onRoleChange(member.id, "MODERATOR");
+                                    }}
+                                  >
+                                    <ShieldCheck className="h-4 w-4 mr-2" />
+                                    Moderator
+                                    {member.role === "MODERATOR" && (
+                                      <Check className="h-4 w-4 text-green-600 ml-2" />
+                                    )}
+                                  </DropdownMenuItem>
+                              
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  onRoleChange(member.id, "ADMIN");
+                                }}
+                              >
+                                <ShieldCheck className="h-4 w-4 mr-2" />
+                                ADMIN
+                                {member.role === "ADMIN" && (
+                                  <Check className="h-4 w-4 text-green-600 ml-2" />
+                                )}
+                              </DropdownMenuItem> 
+                              
+                              
+                              
+                              
+                              
+                              ------------------------
+                              
+                              
+                              
+                                                          <DropdownMenuSubContent>
+                              {server?.members?.map((members) => {
+                                if (members.role === "MODERATOR") {
+                                  return (
+                                    <DropdownMenuItem
+                                      onClick={() => onRoleChange(member.id, "GUEST")}
+                                    >
+                                      <Shield className="h-4 w-4 mr-2" />
+                                      Guest
+                                      {member.role === "GUEST" && (
+                                        <Check className="h-4 w-4 text-green-600 ml-auto" />
+                                      )}
+                                    </DropdownMenuItem>
+                                  );
+                                }
+                                else if (members.role === "ADMIN") {
+                                  return (
+                                    <>
+                                      <DropdownMenuItem
+                                      onClick={() => {
+                                        onRoleChange(member.id, "MODERATOR");
+                                      }}
+                                      >
+                                      <ShieldCheck className="h-4 w-4 mr-2" />
+                                      Moderator
+                                      {member.role === "MODERATOR" && (
+                                        <Check className="h-4 w-4 text-green-600 ml-2" />
+                                      )}
+                                    </DropdownMenuItem>
+                                    </>
+                                  );
+                                }
+                                else if(members.role ="CREATOR"){
+                                  return(<>
+                                  <DropdownMenuItem
+                                      onClick={() => {
+                                        onRoleChange(member.id, "ADMIN");
+                                      }}
+                                      >
+                                      <Crown className="h-4 w-4 mr-2" />
+                                      Admin
+                                      {member.role === "ADMIN" && (
+                                        <Check className="h-4 w-4 text-green-600 ml-2" />
+                                      )}
+                                    </DropdownMenuItem>                                                        
+                                  </>)
+                                }                               
+                              })}
+                            </DropdownMenuSubContent>
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              
+                              */

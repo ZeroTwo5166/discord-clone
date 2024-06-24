@@ -13,6 +13,7 @@ import { Button } from "../ui/button";
 import { useOrigin } from "@/hooks/use-origin";
 import { useState } from "react";
 import axios from "axios";
+import { MemberRole } from "@prisma/client";
 
 const InviteModel = () => {
   const { onOpen, isOpen, onClose, type, data } = useModel();
@@ -78,7 +79,8 @@ const InviteModel = () => {
               {copied ? <Check className="w-4 h-4"/> : <Copy className="w-4 h-4" />}
             </Button>
           </div>
-          <Button
+          {MemberRole.ADMIN && (
+            <Button
             disabled={isLoading}
             variant="link"
             onClick={onNew}
@@ -88,6 +90,8 @@ const InviteModel = () => {
             Generate a new link
             <RefreshCw className="w-4 h-4 ml-2" />
           </Button>
+          )}
+          
         </div>
       </DialogContent>
     </Dialog>

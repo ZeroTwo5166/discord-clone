@@ -12,15 +12,16 @@ interface ServerHeaderProps {
     isMobile?: boolean
 };
 
-
 export const ServerHeader : React.FC<ServerHeaderProps> = ({
     server,
     role,
     isMobile
 } : ServerHeaderProps) => {
     const { onOpen } = useModel();
-    const isAdmin = role === MemberRole.ADMIN;
-    const isModerator = isAdmin || role === MemberRole.MODERATOR
+    const isModerator = role === MemberRole.MODERATOR || role === MemberRole.ADMIN || role === MemberRole.CREATOR;
+    const isAdmin = role === MemberRole.ADMIN || role === MemberRole.CREATOR;
+    const isCreator = role === MemberRole.CREATOR;
+    
     return(
         <DropdownMenu>
             <DropdownMenuTrigger className="focus:outline-none" asChild>
@@ -60,7 +61,7 @@ export const ServerHeader : React.FC<ServerHeaderProps> = ({
                     </DropdownMenuItem>
                 )}
 
-                {isAdmin && (
+                {isModerator && (
                     <DropdownMenuItem onClick={()=>onOpen("members", {server})}
                      className="px-3 py-2 text-sm cursor-pointer"
                     >
@@ -83,7 +84,7 @@ export const ServerHeader : React.FC<ServerHeaderProps> = ({
                     )
                 }
 
-                {isAdmin && (
+                {isCreator && (
                     <DropdownMenuItem 
                      onClick={()=> onOpen("deleteServer", {server})}
                      className="text-rose-500 px-3 py-2 text-sm cursor-pointer"
@@ -93,7 +94,7 @@ export const ServerHeader : React.FC<ServerHeaderProps> = ({
                     </DropdownMenuItem>
                 )}
 
-                {!isAdmin && (
+                {!isCreator && (
                     <DropdownMenuItem 
                      onClick={()=>onOpen("leaveServer", { server })}
                      className="text-rose-500 px-3 py-2 text-sm cursor-pointer"
