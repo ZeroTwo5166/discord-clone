@@ -63,7 +63,8 @@ export const ServerSidebar = async ({
     const textChannels = server?.channels.filter(channel => channel.type === ChannelType.TEXT);
     const audioChannels = server?.channels.filter(channel => channel.type === ChannelType.AUDIO);
     const videoChannels = server?.channels.filter(channel => channel.type === ChannelType.VIDEO);
-    const members = server?.members.filter(member => member.profileId !== profile.id)
+    //const members = server?.members.filter(member => member.profileId !== profile.id)
+    const members = server?.members
 
     if(!server){
         return redirect("/")

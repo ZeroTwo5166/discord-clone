@@ -82,8 +82,13 @@ const CreateChannelModel = () => {
       form.reset();
       router.refresh();
       onClose();
-    } catch (error) {
-      console.log(error);
+    } catch (error:any) {
+      if (error.response) {
+        form.setError("name", {
+          type: "server",
+          message: error.response.data,
+        });
+      }
     }
   };
 

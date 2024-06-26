@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Input } from "../ui/input";
+import { MemberRole } from "@prisma/client";
 
 const DeleteServerModel = () => {
   const { isOpen, onClose, type, data } = useModel();
@@ -29,9 +30,8 @@ const DeleteServerModel = () => {
   // Update confirmDeletionText when server changes
   useEffect(() => {
     if (server) {
-      const queryServer: any = server;
-      const adminRole = queryServer?.members.find(
-        (member: any) => member.role === "ADMIN"
+      const adminRole = server?.members.find(
+        (member: any) => member.role === MemberRole.CREATOR
       );
       if (adminRole) {
         const adminNameForDeleteServer = adminRole.profile.name;

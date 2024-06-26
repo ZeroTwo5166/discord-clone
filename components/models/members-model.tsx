@@ -36,7 +36,7 @@ import {
   ShieldCheck,
   ShieldQuestion,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import qs from "query-string";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -49,22 +49,65 @@ const roleIconMap = {
   CREATOR: <Crown className="h-4 w-4 text-yellow-500" />
 };
 
+// Define role hierarchy
+const roleHierarchy = {
+  CREATOR: 4,
+  ADMIN: 3,
+  MODERATOR: 2,
+  GUEST: 1
+};
+
 const MembersModel = () => {
   const { onOpen, isOpen, onClose, type, data } = useModel();
   const [loadingId, setLoadingId] = useState("");
-  const [currentUser, setCurrentUser] = useState(null);
 
   const isModelOpen = isOpen && type === "members";
   const { server } = data as { server: ServerWithMembersWithProfiles };
   const router = useRouter();
+  const memberRef = useRef(null);
+
+
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [renderKey, setRenderKey] = useState(0);
 
   useEffect(() => {
-    if (data?.server?.members) {
-      data.server.members.forEach(member => {
-        console.log(server);
-      });
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch('/api/profile', {
+          method: 'GET',
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile');
+        }
+        const data = await response.json();
+        setProfile(data);
+        console.log(data)
+        setLoading(false);
+      } catch (error: any) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  // Update memberRef when profile or data changes
+  useEffect(() => {
+    if (server?.members && profile) {
+      const foundMember = server.members.find(
+        (mbm) => mbm.profileId === profile.id
+      );
+      if (foundMember) {
+        console.log("FOUND;;;", foundMember.role);
+        memberRef.current = foundMember;
+        setRenderKey((prevKey) => prevKey + 1); // Force re-render
+      }
     }
-  }, [data]); // Only re-run the effect if data changes
+  }, [data, profile]);
 
   const onKick = async (memberId: string) => {
     try {
@@ -106,24 +149,15 @@ const MembersModel = () => {
     }
   };
 
-
-  const renderRoleOptions = (memberId: string) => {
-    const availableRoles = ["ADMIN", "MODERATOR", "CREATOR", "GUEST"];
-    return (
-      <DropdownMenuSubContent>
-        {availableRoles.map((role) => (
-          <DropdownMenuItem
-            key={role}
-            onClick={() => onRoleChange(memberId, role as MemberRole)}
-          >
-            {roleIconMap[role as MemberRole]}
-            <span className="ml-2">{role}</span>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuSubContent>
-    );
+  // Function to check if the current user has a higher role than the member
+  const hasHigherRole = (currentRole: MemberRole, memberRole: MemberRole) => {
+    return roleHierarchy[currentRole] > roleHierarchy[memberRole];
   };
 
+    // Function to check if the current user is a moderator
+    const isModerator = (role:MemberRole) => {
+      return role === "MODERATOR";
+    };
 
   return (
     <Dialog open={isModelOpen && type === "members"} onOpenChange={onClose}>
@@ -155,25 +189,89 @@ const MembersModel = () => {
                 <p className="text-xs text-zinc-500">{member.profile.email}</p>
               </div>
               {server.creatorId !== member.profileId &&
-                loadingId !== member.id && (
+                loadingId !== member.id &&
+                member.profileId !== profile?.id && // Hide dropdown for current user
+                hasHigherRole(memberRef.current?.role, member.role) && (
                   <div className="ml-auto">
                     <DropdownMenu>
                       <DropdownMenuTrigger>
                         <MoreVertical className="h-4 w-4 text-zinc-500" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent side="left">
-                        <DropdownMenuSub>
+                      {!isModerator(memberRef.current?.role) && ( // Show role options only for non-moderators
+                        <>
+                                                <DropdownMenuSub>
                           <DropdownMenuSubTrigger className="flex items-center">
                             <ShieldQuestion className="w-4 h-4 mr-2" />
                             <span>Role</span>
                           </DropdownMenuSubTrigger>
                           <DropdownMenuPortal>
                             <DropdownMenuSubContent>
-                            {renderRoleOptions(member.role)}
+                              {memberRef.current?.role === "CREATOR" && (
+
+                                <>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      onRoleChange(member.id, "ADMIN");
+                                    }}
+                                  >
+                                    <ShieldAlert className="h-4 w-4 mr-2" />
+                                    ADMIN
+                                    {member.role === "ADMIN" && (
+                                      <Check className="h-4 w-4 text-green-600 ml-2" />
+                                    )}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => onRoleChange(member.id, "MODERATOR")}
+                                  >
+                                    <ShieldCheck className="h-4 w-4 mr-2" />
+                                    Moderator
+                                    {member.role === "MODERATOR" && (
+                                      <Check className="h-4 w-4 text-green-600 ml-2" />
+                                    )}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => onRoleChange(member.id, "GUEST")}
+                                  >
+                                    <Shield className="h-4 w-4 mr-2" />
+                                    Guest
+                                    {member.role === "GUEST" && (
+                                      <Check className="h-4 w-4 text-green-600 ml-auto" />
+                                    )}
+                                  </DropdownMenuItem>
+                                </>
+
+                              )}
+                              {memberRef.current?.role === "ADMIN" && (
+                                <>
+                                  <DropdownMenuItem
+                                    onClick={() => onRoleChange(member.id, "MODERATOR")}
+                                  >
+                                    <ShieldCheck className="h-4 w-4 mr-2" />
+                                    Moderator
+                                    {member.role === "MODERATOR" && (
+                                      <Check className="h-4 w-4 text-green-600 ml-auto" />
+                                    )}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => onRoleChange(member.id, "GUEST")}
+                                  >
+                                    <Shield className="h-4 w-4 mr-2" />
+                                    Guest
+                                    {member.role === "GUEST" && (
+                                      <Check className="h-4 w-4 text-green-600 ml-auto" />
+                                    )}
+                                  </DropdownMenuItem>
+                                </>
+                              )}
                             </DropdownMenuSubContent>
                           </DropdownMenuPortal>
                         </DropdownMenuSub>
                         <DropdownMenuSeparator />
+                        
+                        </>
+                      )}
+
                         <DropdownMenuItem onClick={() => onKick(member.id)}>
                           <UserMinusIcon className="h-4 w-4 mr-2" />
                           Kick
@@ -229,9 +327,19 @@ export default MembersModel;
                                 )}
                               </DropdownMenuItem> 
                               
+                              ----------------------------
                               
-                              
-                              
+                                                     {memberRef.current?.role === "MODERATOR" && (
+                                <DropdownMenuItem
+                                  onClick={() => onRoleChange(member.id, "GUEST")}
+                                >
+                                  <Shield className="h-4 w-4 mr-2" />
+                                  Guest
+                                  {member.role === "GUEST" && (
+                                    <Check className="h-4 w-4 text-green-600 ml-auto" />
+                                  )}
+                                </DropdownMenuItem>
+                              )}       
                               
                               ------------------------
                               

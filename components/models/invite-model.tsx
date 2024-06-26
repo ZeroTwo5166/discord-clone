@@ -11,7 +11,7 @@ import { Input } from "../ui/input";
 import { Check, Copy, RefreshCw } from "lucide-react";
 import { Button } from "../ui/button";
 import { useOrigin } from "@/hooks/use-origin";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { MemberRole } from "@prisma/client";
 
@@ -24,6 +24,48 @@ const InviteModel = () => {
 
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [renderKey, setRenderKey] = useState(0);
+  const memberRef = useRef(null);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch('/api/profile', {
+          method: 'GET',
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile');
+        }
+        const data = await response.json();
+        setProfile(data);
+        console.log(data)
+        setLoading(false);
+      } catch (error: any) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  // Update memberRef when profile or data changes
+  useEffect(() => {
+    if (server?.members && profile) {
+      const foundMember = server.members.find(
+        (mbm) => mbm.profileId === profile.id
+      );
+      if (foundMember) {
+        console.log("FOUND;;;", foundMember.role);
+        memberRef.current = foundMember;
+        setRenderKey((prevKey) => prevKey + 1); // Force re-render
+      }
+    }
+  }, [data, profile]);
 
   const onCopy = () => {
     navigator.clipboard.writeText(inviteUrl);
@@ -76,22 +118,22 @@ const InviteModel = () => {
               value={inviteUrl}
             />
             <Button disabled={isLoading} onClick={onCopy} size="icon" className="">
-              {copied ? <Check className="w-4 h-4"/> : <Copy className="w-4 h-4" />}
+              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             </Button>
           </div>
-          {MemberRole.ADMIN && (
+          {(memberRef.current?.role === "CREATOR" || memberRef.current?.role === "ADMIN") && (
             <Button
-            disabled={isLoading}
-            variant="link"
-            onClick={onNew}
-            size="sm"
-            className="text-xs text-zinc-500 mt-4"
-          >
-            Generate a new link
-            <RefreshCw className="w-4 h-4 ml-2" />
-          </Button>
+              disabled={isLoading}
+              variant="link"
+              onClick={onNew}
+              size="sm"
+              className="text-xs text-zinc-500 mt-4"
+            >
+              Generate a new link
+              <RefreshCw className="w-4 h-4 ml-2" />
+            </Button>
           )}
-          
+
         </div>
       </DialogContent>
     </Dialog>

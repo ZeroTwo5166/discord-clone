@@ -14,15 +14,36 @@ export async function POST(
         const serverId = searchParams.get("serverId");
         
         if(!profile){
-            return new NextResponse("Unauthorized", { status : 401})
+            return new NextResponse("Unauthorized", { status : 401});
         }
 
         if(!serverId){
-            return new NextResponse("Server ID missing", { status : 400})
+            return new NextResponse("Server ID missing", { status : 400});
         }
 
         if(name.toLowerCase() === "general"){
-            return new NextResponse("Channel name cannot be general!", { status: 400})
+            return new NextResponse("Channel name cannot be 'general'!", { status: 400});
+        }
+
+        const serverExists = await db.server.findUnique({
+            where: { id: serverId },
+        });
+
+        if (!serverExists) {
+            return new NextResponse("Server not found", { status: 404 });
+        }
+
+        // Check if a channel with the same name and type already exists in the server
+        const existingChannel = await db.channel.findFirst({
+            where: {
+                serverId,
+                name,
+                type, // Add this to ensure the type is also considered
+            }
+        });
+
+        if(existingChannel){
+            return new NextResponse(`Name '${name}' already exists in channel '${type}'`, { status: 400 });
         }
 
         const server = await db.server.update({
@@ -32,7 +53,7 @@ export async function POST(
                     some: {
                         profileId: profile.id,
                         role: {
-                            in: [MemberRole.ADMIN, MemberRole.MODERATOR]
+                            in: [MemberRole.CREATOR, MemberRole.ADMIN, MemberRole.MODERATOR]
                         }
                     }
                 }
@@ -46,12 +67,12 @@ export async function POST(
                     }
                 }
             }
-        })
+        });
 
         return NextResponse.json(server);
 
     } catch (error) {
-        console.log("CHANNEL_POST", error)
-        return new NextResponse("Internal Error", {status: 500})
+        console.log("CHANNEL_POST", error);
+        return new NextResponse("Internal Error", {status: 500});
     }
 }

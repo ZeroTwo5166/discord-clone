@@ -20,7 +20,6 @@ export async function PATCH(
         const server = await db.server.update({
             where: {
                 id: params.serverId,
-                creatorId: profile.id,
             },
             data: {
                 inviteCode: uuidv4(),

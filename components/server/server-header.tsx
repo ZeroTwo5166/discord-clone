@@ -34,7 +34,6 @@ export const ServerHeader : React.FC<ServerHeaderProps> = ({
                     {isMobile ? (
                         <ChevronDown className="h-5 w-5 ml-2"/> 
                     ) : (<ChevronDown className="h-5 w-5 ml-auto"/>)}
-   
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 text-xs
